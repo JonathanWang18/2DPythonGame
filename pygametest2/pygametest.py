@@ -17,6 +17,15 @@ char = pygame.image.load('Images/standing.png')
 
 clock = pygame.time.Clock()
 
+class enemy(object):
+    walkRight = [pygame.image.load('Images/R1E.png'), pygame.image.load('Images/R2E.png'), pygame.image.load('Images/R3E.png'),
+                 pygame.image.load('Images/R4E.png'), pygame.image.load('Images/R5E.png'), pygame.image.load('Images/R6E.png'),
+                 pygame.image.load('Images/R7E.png'), pygame.image.load('Images/R8E.png'), pygame.image.load('Images/R9E.png'),
+                 pygame.image.load('R10E.png'), pygame.image.load('R11E.png')]
+    walkLeft = [pygame.image.load('Images/L1E.png'), pygame.image.load('Images/L2E.png'), pygame.image.load('Images/L3E.png'),
+                pygame.image.load('Images/L4E.png'), pygame.image.load('Images/L5E.png'), pygame.image.load('Images/L6E.png'),
+                pygame.image.load('Images/L7E.png'), pygame.image.load('Images/L8E.png'), pygame.image.load('Images/L9E.png'),
+                pygame.image.load('Images/L10E.png'), pygame.image.load('Images/L11E.png')]
 
 class player(object):
     def __init__(self, x, y, width, height):
