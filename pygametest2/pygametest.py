@@ -13,6 +13,7 @@ walkLeft = [pygame.image.load('Images/L1.png'), pygame.image.load('Images/L2.png
             pygame.image.load('Images/L4.png'), pygame.image.load('Images/L5.png'), pygame.image.load('Images/L6.png'),
             pygame.image.load('Images/L7.png'), pygame.image.load('Images/L8.png'), pygame.image.load('Images/L9.png')]
 bg = pygame.image.load('bg.jpg').convert()
+nbgx = 0 - bg.get_width()
 bgx = 0
 bgx2 = bg.get_width()
 
@@ -80,15 +81,20 @@ def redrawGameWindow():
 # mainloop
 man = player(20, 410, 64, 64)
 bullets = []
+currentbgxpos = 0
+currentbgx2pos = bg.get_width()
 run = True
 while run:
     clock.tick(27)
-    bgx -= 1.4
-    bgx2 -= 1.4
-    if bgx < bg.get_width() * -1:
-        bgx = bg.get_width()
-    if bgx2 < bg.get_width() * -1:
-        bgx2 = bg.get_width()
+    redrawGameWindow()
+
+    #bgx -= .5
+    #bgx2 -= .5
+    #if bgx < bg.get_width() * -1:
+       #bgx = bg.get_width()
+    #if bgx2 < bg.get_width() * -1:
+        #bgx2 = bg.get_width()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -140,8 +146,24 @@ while run:
         else:
             man.isJump = False
             man.jumpCount = 10
+
     man.x += man.vel
 
+    if man.x < 5:
+        man.x = 5
+    if man.x > 500/2:
+        man.x = 500/2
+    if man.x > 249 and (keys[pygame.K_RIGHT]):
+        bgx -= 2.5
+        bgx2 -= 2.5
+        currentbgxpos = bgx
+        currentbgx2pos = bgx2
+    bgx = currentbgxpos
+    bgx2 = currentbgx2pos
+    if bgx < bg.get_width() * -1:
+        bgx = bg.get_width()
+    if bgx2 < bg.get_width() * -1:
+        bgx2 = bg.get_width()
     redrawGameWindow()
 
 pygame.quit()
