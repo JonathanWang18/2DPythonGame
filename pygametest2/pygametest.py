@@ -2,25 +2,29 @@ import pygame
 
 pygame.init()
 
-win = pygame.display.set_mode((500, 480))
+win = pygame.display.set_mode((638, 361))
 
 pygame.display.set_caption("First Game")
 
-walkRight = [pygame.image.load('Images/R1.png'), pygame.image.load('Images/R2.png'),
-                 pygame.image.load('Images/R3.png'),
-                 pygame.image.load('Images/R4.png'), pygame.image.load('Images/R5.png'),
-                 pygame.image.load('Images/R6.png'),
-                 pygame.image.load('Images/R7.png'), pygame.image.load('Images/R8.png'),
-                 pygame.image.load('Images/R9.png')]
-walkLeft = [pygame.image.load('Images/L1.png'), pygame.image.load('Images/L2.png'),
-                pygame.image.load('Images/L3.png'),
-                pygame.image.load('Images/L4.png'), pygame.image.load('Images/L5.png'),
-                pygame.image.load('Images/L6.png'),
-                pygame.image.load('Images/L7.png'), pygame.image.load('Images/L8.png'),
-                pygame.image.load('Images/L9.png')]
+attack1 = [pygame.image.load('NewImages/attack1_1.png'), pygame.image.load('NewImages/attack1_2.png'),
+             pygame.image.load('NewImages/attack1_3.png'), pygame.image.load('NewImages/attack1_4.png'),
+             pygame.image.load('NewImages/attack1_5.png'), pygame.image.load('NewImages/attack1_6.png')]
 
-bg = pygame.image.load('bg.jpg')
-char = pygame.image.load('Images/standing.png')
+walkRight = [pygame.image.load('NewImages/ready_1.png'), pygame.image.load('NewImages/run_1.png'),
+             pygame.image.load('NewImages/run_2.png'), pygame.image.load('NewImages/run_3.png'),
+             pygame.image.load('NewImages/run_4.png'), pygame.image.load('NewImages/run_5.png'),
+             pygame.image.load('NewImages/run_6.png'),]
+walkLeft = [pygame.image.load('NewImages/lready_1.png'), pygame.image.load('NewImages/lrun_1.png'),
+            pygame.image.load('NewImages/lrun_2.png'), pygame.image.load('NewImages/lrun_3.png'),
+             pygame.image.load('NewImages/lrun_4.png'), pygame.image.load('NewImages/lrun_5.png'),
+            pygame.image.load('NewImages/lrun_6.png'),]
+
+bg = pygame.image.load('NewImages/bg.gif').convert()
+bgx = 0
+bgx2 = bg.get_width()
+
+
+char = pygame.image.load('NewImages/ready_1.png')
 
 clock = pygame.time.Clock()
 
@@ -32,16 +36,18 @@ class player(object):
         self.y = y
         self.width = width
         self.height = height
-        self.vel = 5
+        self.vel = 0
         self.isJump = False
         self.left = False
         self.right = False
+        self.attackCount = 0
         self.walkCount = 0
         self.jumpCount = 10
         self.standing = True
-        self.hitbox = (self.x + 17, self.y + 11, 29, 52)
+        self.hitbox = (self.x + 38, self.y + 24, 32, 60)
         self.health = 10
         self.visible = True
+        self.attacking = False
 
     def hit(self):
         if self.health > 0:
@@ -50,11 +56,17 @@ class player(object):
             self.visible = False
         pass
 
+
     def draw(self, win):
         if self.visible:
-            if self.walkCount + 1 >= 27:
+            if self.attackCount + 1 >= 18:
+                self.attackCount = 0
+                self.attacking = False
+            if self.walkCount + 1 >= 21:
                 self.walkCount = 0
-
+            if self.attacking:
+                win.blit(attack1[self.attackCount // 3], (self.x, self.y))
+                self.attackCount += 1
             if not (self.standing):
                 if self.left:
                     win.blit(walkLeft[self.walkCount // 3], (self.x, self.y))
@@ -69,7 +81,7 @@ class player(object):
                     win.blit(walkLeft[0], (self.x, self.y))
             pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1] - 20, 50, 10))
             pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0], self.hitbox[1] - 20, 50 - ((50 / 10) * (10 - self.health)), 10))
-            self.hitbox = (self.x + 17, self.y + 11, 29, 52)
+            self.hitbox = (self.x + 38, self.y + 24, 32, 60)
             #pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
 
@@ -111,7 +123,7 @@ class enemy(object):
             else:
                 win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
                 self.walkCount += 1
-            pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1]- 20, 50, 10))
+            pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1] - 20, 50, 10))
             pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0], self.hitbox[1] - 20, 50 - ((50/10) * (10 - self.health)), 10))
             self.hitbox = (self.x + 17, self.y + 2, 31, 57)
             #pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
@@ -150,9 +162,8 @@ class projectile(object):
         pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
 
 def redrawGameWindow():
-    win.blit(bg, (0, 0))
-    text = font.render('Score: ' + str(score), 1, (0, 0, 0))
-    win.blit(text, (390, 10))
+    win.blit(bg, (bgx, 0))
+    win.blit(bg, (bgx2, 0))
     man.draw(win)
     goblin.draw(win)
     for bullet in bullets:
@@ -162,10 +173,13 @@ def redrawGameWindow():
 
 # mainloop
 font = pygame.font.SysFont('arialblack', 15, True)
-man = player(200, 410, 64, 64)
-goblin = enemy(100, 410, 64, 64, 450)
+man = player(250, 215, 64, 64)
+goblin = enemy(100, 235, 64, 64, 450)
 shootLoop = 0
 bullets = []
+currentnbgxpos = 0 - bg.get_width()
+currentbgxpos = 0
+currentbgx2pos = bg.get_width()
 run = True
 while run:
     clock.tick(27)
@@ -207,20 +221,22 @@ while run:
             bullets.append(
                 projectile(round(man.x + man.width // 2), round(man.y + man.height // 2), 6, (0, 0, 0), facing))
         shootLoop = 1
-
-    if keys[pygame.K_LEFT] and man.x > man.vel:
-        man.x -= man.vel
+    if keys[pygame.K_z]:
+        man.attacking = True
+    if keys[pygame.K_LEFT]:
+        man.vel = -5
         man.left = True
         man.right = False
         man.standing = False
-    elif keys[pygame.K_RIGHT] and man.x < 500 - man.width - man.vel:
-        man.x += man.vel
+    elif keys[pygame.K_RIGHT]:
+        man.vel = 5
         man.right = True
         man.left = False
         man.standing = False
     else:
         man.standing = True
         man.walkCount = 0
+        man.vel = 0
 
     if not (man.isJump):
         if keys[pygame.K_UP]:
@@ -237,6 +253,27 @@ while run:
             man.isJump = False
             man.jumpCount = 10
 
+    man.x += man.vel
+
+    if man.x < 5:
+        man.x = 5
+    if man.x > 318:
+        man.x = 319
+    if man.x > 318 and (keys[pygame.K_RIGHT]):
+        man.x = 319
+        bgx -= 4
+        bgx2 -= 4
+        currentbgxpos = bgx
+        currentbgx2pos = bgx2
+
+
+    bgx = currentbgxpos
+    bgx2 = currentbgx2pos
+
+    if bgx < bg.get_width() * -1:
+        bgx = bg.get_width()
+    if bgx2 < bg.get_width() * -1:
+        bgx2 = bg.get_width()
     redrawGameWindow()
 
 pygame.quit()
