@@ -2,23 +2,20 @@ import pygame
 
 pygame.init()
 
-win = pygame.display.set_mode((500, 480))
+win = pygame.display.set_mode((638, 361))
 
 pygame.display.set_caption("First Game")
 
-walkRight = [pygame.image.load('Images/R1.png'), pygame.image.load('Images/R2.png'), pygame.image.load('Images/R3.png'),
-             pygame.image.load('Images/R4.png'), pygame.image.load('Images/R5.png'), pygame.image.load('Images/R6.png'),
-             pygame.image.load('Images/R7.png'), pygame.image.load('Images/R8.png'), pygame.image.load('Images/R9.png')]
-walkLeft = [pygame.image.load('Images/L1.png'), pygame.image.load('Images/L2.png'), pygame.image.load('Images/L3.png'),
-            pygame.image.load('Images/L4.png'), pygame.image.load('Images/L5.png'), pygame.image.load('Images/L6.png'),
-            pygame.image.load('Images/L7.png'), pygame.image.load('Images/L8.png'), pygame.image.load('Images/L9.png')]
-bg = pygame.image.load('bg.jpg').convert()
-nbgx = 0 - bg.get_width()
+walkRight = [pygame.image.load('NewImages/ready_1.png'), pygame.image.load('NewImages/run_1.png'), pygame.image.load('NewImages/run_2.png'), pygame.image.load('NewImages/run_3.png'),
+             pygame.image.load('NewImages/run_4.png'), pygame.image.load('NewImages/run_5.png'), pygame.image.load('NewImages/run_6.png'),]
+walkLeft = [pygame.image.load('NewImages/lready_1.png'), pygame.image.load('NewImages/lrun_1.png'), pygame.image.load('NewImages/lrun_2.png'), pygame.image.load('NewImages/lrun_3.png'),
+             pygame.image.load('NewImages/lrun_4.png'), pygame.image.load('NewImages/lrun_5.png'), pygame.image.load('NewImages/lrun_6.png'),]
+bg = pygame.image.load('NewImages/bg.gif').convert()
 bgx = 0
 bgx2 = bg.get_width()
 
 
-char = pygame.image.load('Images/standing.png')
+char = pygame.image.load('NewImages/ready_1.png')
 
 clock = pygame.time.Clock()
 
@@ -43,17 +40,16 @@ class player(object):
 
         if not (self.standing):
             if self.left:
-                win.blit(walkLeft[self.walkCount // 3], (self.x, self.y))
+                win.blit(walkLeft[self.walkCount // 6], (self.x, self.y))
                 self.walkCount += 1
-            elif self.right:
-                win.blit(walkRight[self.walkCount // 3], (self.x, self.y))
+            if self.right:
+                win.blit(walkRight[self.walkCount // 6], (self.x, self.y))
                 self.walkCount += 1
         else:
-            if self.right:
-                win.blit(walkRight[0], (self.x, self.y))
-            else:
+            if self.left:
                 win.blit(walkLeft[0], (self.x, self.y))
-
+            else:
+                win.blit(walkRight[0], (self.x, self.y))
 
 class projectile(object):
     def __init__(self, x, y, radius, color, facing):
@@ -79,8 +75,9 @@ def redrawGameWindow():
 
 
 # mainloop
-man = player(20, 410, 64, 64)
+man = player(250, 215, 64, 64)
 bullets = []
+currentnbgxpos = 0 - bg.get_width()
 currentbgxpos = 0
 currentbgx2pos = bg.get_width()
 run = True
@@ -88,19 +85,12 @@ while run:
     clock.tick(27)
     redrawGameWindow()
 
-    #bgx -= .5
-    #bgx2 -= .5
-    #if bgx < bg.get_width() * -1:
-       #bgx = bg.get_width()
-    #if bgx2 < bg.get_width() * -1:
-        #bgx2 = bg.get_width()
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
 
     for bullet in bullets:
-        if bullet.x < 500 and bullet.x > 0:
+        if bullet.x < bg.get_width() and bullet.x > 0:
             bullet.x += bullet.vel
         else:
             bullets.pop(bullets.index(bullet))
@@ -151,19 +141,24 @@ while run:
 
     if man.x < 5:
         man.x = 5
-    if man.x > 500/2:
-        man.x = 500/2
-    if man.x > 249 and (keys[pygame.K_RIGHT]):
-        bgx -= 2.5
-        bgx2 -= 2.5
+    if man.x > 318:
+        man.x = 319
+    if man.x > 318 and (keys[pygame.K_RIGHT]):
+        man.x = 319
+        bgx -= 4
+        bgx2 -= 4
         currentbgxpos = bgx
         currentbgx2pos = bgx2
+
+
     bgx = currentbgxpos
     bgx2 = currentbgx2pos
+
     if bgx < bg.get_width() * -1:
         bgx = bg.get_width()
     if bgx2 < bg.get_width() * -1:
         bgx2 = bg.get_width()
+
     redrawGameWindow()
 
 pygame.quit()
