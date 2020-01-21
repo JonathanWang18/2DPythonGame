@@ -261,7 +261,7 @@ while run: #Cred: Lac-Phong Nguyen, Jonathan Wang
             else:
                 man.isJump = False
                 man.jumpCount = 10
-
+        #Adds velocity values to man.x to change player position accordingly to movement key activity
         man.x += man.vel
 
         if man.x < 5:
@@ -274,17 +274,19 @@ while run: #Cred: Lac-Phong Nguyen, Jonathan Wang
             man.x = 319
             bgx -= 4
             bgx2 -= 4
+            #saves the values of bgx and bgx2 to global variables to update
             currentbgxpos = bgx
             currentbgx2pos = bgx2
 
     #Cred: Jonathan Wang
+    #sets the x position of both backgroundss to the newly modified values from the conditional above
     bgx = currentbgxpos
     bgx2 = currentbgx2pos
-
+    #once bg x position is at negative width x of bg, reset the bg x to the positive width x coordinate so it can move leftwards
     if bgx < bg.get_width() * -1:
         bgx = bg.get_width()
     if bgx2 < bg.get_width() * -1:
         bgx2 = bg.get_width()
     redrawGameWindow()
-
+#terminate the program if run is set to False
 pygame.quit()
