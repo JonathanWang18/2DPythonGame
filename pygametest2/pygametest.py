@@ -65,7 +65,7 @@ class player(object):
             if self.walkCount + 1 >= 21:
                 self.walkCount = 0
             if self.attacking:
-                win.blit(attack1[self.attackCount // 3], (self.x, self.y))
+                win.blit(attack1[self.attackCount // 3], (self.x - 30, self.y - 30))
                 self.attackCount += 1
             if not (self.standing):
                 if self.left:
@@ -84,6 +84,26 @@ class player(object):
             self.hitbox = (self.x + 38, self.y + 24, 32, 60)
             #pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
+class playerAttacking(object):
+    def __init__(self, x, y, width, height, facing):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.vel = 0
+        self.attackCount = 0
+        self.hitbox = (self.x + 38, self.y + 24, 32, 60)
+        self.visible = True
+        self.attacking = False
+        self.facing = facing
+
+    def draw(self, win):
+        if self.attackCount + 1 >= 18:
+            self.attackCount = 0
+            self.attacking = False
+        if self.attacking:
+            win.blit(attack1[self.attackCount // 3], (self.x - 30, self.y - 30))
+            self.attackCount += 1
 
 class enemy(object):
     walkRight = [pygame.image.load('Images/R1E.png'), pygame.image.load('Images/R2E.png'),
@@ -111,6 +131,7 @@ class enemy(object):
         self.hitbox = (self.x + 17, self.y + 2, 31, 57)
         self.health = 10
         self.visible = True
+
 
     def draw(self, win):
         self.move()
@@ -168,7 +189,6 @@ def redrawGameWindow():
     goblin.draw(win)
     for bullet in bullets:
         bullet.draw(win)
-
     pygame.display.update()
 
 # mainloop
@@ -187,9 +207,6 @@ while run:
         if man.hitbox[0] + man.hitbox[2] > goblin.hitbox[0] and man.hitbox[0] < goblin.hitbox[0] + goblin.hitbox[2]:
             man.hit()
             score -= 5
-    if man.visible == False:
-        goblin.visible = False
-        bg = pygame.image.load('gameover.jpg')
     if shootLoop > 0:
         shootLoop += 1
     if shootLoop > 3:
@@ -222,7 +239,13 @@ while run:
                 projectile(round(man.x + man.width // 2), round(man.y + man.height // 2), 6, (0, 0, 0), facing))
         shootLoop = 1
     if keys[pygame.K_z]:
-        man.attacking = True
+        if man.left:
+            facing = -1
+        else:
+            facing = 1
+        manAttack = playerAttacking(round(man.x + man.width // 2), round(man.y + man.height // 2), 64, 64, facing)
+        manAttack.draw(win)
+        manAttack.attacking = True
     if keys[pygame.K_LEFT]:
         man.vel = -5
         man.left = True
