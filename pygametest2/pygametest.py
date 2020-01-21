@@ -12,6 +12,12 @@ attack1 = [pygame.image.load('NewImages/attack1_1.png'), pygame.image.load('NewI
 attack2 = [pygame.image.load('NewImages/lattack1_1.png'), pygame.image.load('NewImages/lattack1_2.png'),
              pygame.image.load('NewImages/lattack1_3.png'), pygame.image.load('NewImages/lattack1_4.png'),
              pygame.image.load('NewImages/lattack1_5.png'), pygame.image.load('NewImages/lattack1_6.png')]
+jump1 = [pygame.image.load('NewImages/jump_1.png'), pygame.image.load('NewImages/jump_2.png'),
+             pygame.image.load('NewImages/jump_3.png'), pygame.image.load('NewImages/jump_4.png'),
+             pygame.image.load('NewImages/jump_5.png')]
+jump2 = [pygame.image.load('NewImages/ljump_1.png'), pygame.image.load('NewImages/ljump_2.png'),
+             pygame.image.load('NewImages/ljump_3.png'), pygame.image.load('NewImages/ljump_4.png'),
+             pygame.image.load('NewImages/ljump_5.png')]
 walkRight = [pygame.image.load('NewImages/ready_1.png'), pygame.image.load('NewImages/run_1.png'),
              pygame.image.load('NewImages/run_2.png'), pygame.image.load('NewImages/run_3.png'),
              pygame.image.load('NewImages/run_4.png'), pygame.image.load('NewImages/run_5.png'),
@@ -58,38 +64,41 @@ class player(object):
             self.visible = False
 
     def draw(self, win):
-        if self.attackCount + 1 >= 18:
-            self.visible = True
-            self.attackCount = 0
-            self.attacking = False
-        if self.attacking:
-            if self.right:
-                self.visible = False
-                win.blit(attack1[self.attackCount // 3], (self.x - 30, self.y - 30))
-                self.attackCount += 1
-            else:
-                self.visible = False
-                win.blit(attack2[self.attackCount // 3], (self.x - 70, self.y - 35))
-                self.attackCount += 1
-        if self.visible:
-            if self.walkCount + 1 >= 21:
-                self.walkCount = 0
-            if not (self.standing):
-                if self.left:
-                    win.blit(walkLeft[self.walkCount // 3], (self.x, self.y))
-                    self.walkCount += 1
-                elif self.right:
-                    win.blit(walkRight[self.walkCount // 3], (self.x, self.y))
-                    self.walkCount += 1
-            else:
+        if self.health > 0:
+            if self.attackCount + 1 >= 18:
+                self.visible = True
+                self.attackCount = 0
+                self.attacking = False
+            if self.attacking:
                 if self.right:
-                    win.blit(walkRight[0], (self.x, self.y))
+                    self.visible = False
+                    win.blit(attack1[self.attackCount // 3], (self.x - 30, self.y - 30))
+                    self.attackCount += 1
+                    self.hitbox = (self.x + 70, self.y + 24, 32, 60)
                 else:
-                    win.blit(walkLeft[0], (self.x, self.y))
+                    self.visible = False
+                    win.blit(attack2[self.attackCount // 3], (self.x - 80, self.y - 35))
+                    self.attackCount += 1
+                    self.hitbox = (self.x - 10, self.y + 24, 32, 60)
+            if self.visible:
+                if self.walkCount + 1 >= 21:
+                    self.walkCount = 0
+                if not self.standing:
+                    if self.left:
+                        win.blit(walkLeft[self.walkCount // 3], (self.x, self.y))
+                        self.walkCount += 1
+                    elif self.right:
+                        win.blit(walkRight[self.walkCount // 3], (self.x, self.y))
+                        self.walkCount += 1
+                else:
+                    if self.right:
+                        win.blit(walkRight[0], (self.x, self.y))
+                    else:
+                        win.blit(walkLeft[0], (self.x, self.y))
+                if not self.attacking:
+                    self.hitbox = (self.x + 38, self.y + 24, 32, 60)
             pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1] - 20, 50, 10))
             pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0], self.hitbox[1] - 20, 50 - ((50 / 10) * (10 - self.health)), 10))
-            self.hitbox = (self.x + 38, self.y + 24, 32, 60)
-            #pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
 
 class enemy(object):
@@ -157,25 +166,13 @@ class enemy(object):
             self.visible = False
         pass
 
-class projectile(object):
-    def __init__(self, x, y, radius, color, facing):
-        self.x = x
-        self.y = y
-        self.radius = radius
-        self.color = color
-        self.facing = facing
-        self.vel = 8 * facing
-
-    def draw(self, win):
-        pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
-
 def redrawGameWindow():
     win.blit(bg, (bgx, 0))
     win.blit(bg, (bgx2, 0))
+    text = font.render('Score: ' + str(score), 1, (255, 255, 255))
+    win.blit(text, (10, 5))
     man.draw(win)
     goblin.draw(win)
-    for bullet in bullets:
-        bullet.draw(win)
     pygame.display.update()
 
 # mainloop
@@ -190,92 +187,69 @@ currentbgx2pos = bg.get_width()
 run = True
 while run:
     clock.tick(27)
-    if man.hitbox[1] < goblin.hitbox[1] + goblin.hitbox[3] and man.hitbox[1] > goblin.hitbox[1]:
-        if man.hitbox[0] + man.hitbox[2] > goblin.hitbox[0] and man.hitbox[0] < goblin.hitbox[0] + goblin.hitbox[2]:
-            man.hit()
-            score -= 5
-        if man.health == 0:
-            goblin.visible = False
-            bg = pygame.image.load('gameover.jpg')
-    if shootLoop > 0:
-        shootLoop += 1
-    if shootLoop > 3:
-        shootLoop = 0
+    if goblin.health > 0:
+        if not man.attacking:
+            if man.hitbox[1] < goblin.hitbox[1] + goblin.hitbox[3] and man.hitbox[1] > goblin.hitbox[1]:
+                if man.hitbox[0] + man.hitbox[2] > goblin.hitbox[0] and man.hitbox[0] < goblin.hitbox[0] + goblin.hitbox[2]:
+                    man.hit()
+                    score -= 5
+                if man.health == 0:
+                    goblin.visible = False
+                    bg = pygame.image.load('gameover.jpg')
+    if man.attacking:
+        if man.hitbox[1] < goblin.hitbox[1] + goblin.hitbox[3] and man.hitbox[1] > goblin.hitbox[1]:
+            if man.hitbox[0] + man.hitbox[2] > goblin.hitbox[0] and man.hitbox[0] < goblin.hitbox[0] + goblin.hitbox[2]:
+                goblin.hit()
+                score += 1
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-
-    for bullet in bullets:
-        if bullet.y - bullet.radius < goblin.hitbox[1] + goblin.hitbox[3] and bullet.y + bullet.radius > goblin.hitbox[1]:
-            if bullet.x + bullet.radius > goblin.hitbox[0] and bullet.x - bullet.radius < goblin.hitbox[0] + goblin.hitbox[2]:
-                goblin.hit()
-                score += 1
-                bullets.pop(bullets.index(bullet))
-        if bullet.x < 500 and bullet.x > 0:
-            bullet.x += bullet.vel
-        else:
-            bullets.pop(bullets.index(bullet))
-
     keys = pygame.key.get_pressed()
-
-    if keys[pygame.K_SPACE] and shootLoop == 0:
-        if man.left:
-            facing = -1
-        else:
-            facing = 1
-
-        if len(bullets) < 5:
-            bullets.append(
-                projectile(round(man.x + man.width // 2), round(man.y + man.height // 2), 6, (0, 0, 0), facing))
-        shootLoop = 1
-    if keys[pygame.K_z]:
-        if man.left:
-            facing = -1
-        else:
-            facing = 1
+    if keys[pygame.K_SPACE]:
         man.attacking = True
-    if keys[pygame.K_LEFT]:
-        man.vel = -5
-        man.left = True
-        man.right = False
-        man.standing = False
-    elif keys[pygame.K_RIGHT]:
-        man.vel = 5
-        man.right = True
-        man.left = False
-        man.standing = False
-    else:
-        man.standing = True
-        man.walkCount = 0
-        man.vel = 0
-
-    if not (man.isJump):
-        if keys[pygame.K_UP]:
-            man.isJump = True
-            man.walkCount = 0
-    else:
-        if man.jumpCount >= -10:
-            neg = 1
-            if man.jumpCount < 0:
-                neg = -1
-            man.y -= (man.jumpCount ** 2) * 0.5 * neg
-            man.jumpCount -= 1
+    if man.health > 0:
+        if keys[pygame.K_LEFT]:
+            man.vel = -5
+            man.left = True
+            man.right = False
+            man.standing = False
+        elif keys[pygame.K_RIGHT]:
+            man.vel = 5
+            man.right = True
+            man.left = False
+            man.standing = False
         else:
-            man.isJump = False
-            man.jumpCount = 10
+            man.standing = True
+            man.walkCount = 0
+            man.vel = 0
 
-    man.x += man.vel
+        if not (man.isJump):
+            if keys[pygame.K_UP]:
+                man.isJump = True
+                man.walkCount = 0
+        else:
+            if man.jumpCount >= -10:
+                neg = 1
+                if man.jumpCount < 0:
+                    neg = -1
+                man.y -= (man.jumpCount ** 2) * 0.5 * neg
+                man.jumpCount -= 1
+            else:
+                man.isJump = False
+                man.jumpCount = 10
 
-    if man.x < 5:
-        man.x = 5
-    if man.x > 318:
-        man.x = 319
-    if man.x > 318 and (keys[pygame.K_RIGHT]):
-        man.x = 319
-        bgx -= 4
-        bgx2 -= 4
-        currentbgxpos = bgx
-        currentbgx2pos = bgx2
+        man.x += man.vel
+
+        if man.x < 5:
+            man.x = 5
+        if man.x > 318:
+            man.x = 319
+        if man.x > 318 and (keys[pygame.K_RIGHT]):
+            man.x = 319
+            bgx -= 4
+            bgx2 -= 4
+            currentbgxpos = bgx
+            currentbgx2pos = bgx2
 
 
     bgx = currentbgxpos
