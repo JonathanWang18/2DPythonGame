@@ -1,10 +1,12 @@
 import pygame
+import time
+import threading
 
 pygame.init()
 
 win = pygame.display.set_mode((638, 361))
 
-pygame.display.set_caption("First Game")
+pygame.display.set_caption("PIXEL KNIGHT")
 
 attack1 = [pygame.image.load('NewImages/attack1_1.png'), pygame.image.load('NewImages/attack1_2.png'),
              pygame.image.load('NewImages/attack1_3.png'), pygame.image.load('NewImages/attack1_4.png'),
@@ -31,7 +33,6 @@ bg = pygame.image.load('NewImages/bg.gif').convert()
 bgx = 0
 bgx2 = bg.get_width()
 
-
 char = pygame.image.load('NewImages/ready_1.png')
 
 clock = pygame.time.Clock()
@@ -51,6 +52,7 @@ class player(object):
         self.attackCount = 0
         self.walkCount = 0
         self.jumpCount = 10
+        self.jumpCount1 = 0
         self.standing = True
         self.hitbox = (self.x + 38, self.y + 24, 32, 60)
         self.health = 10
@@ -80,6 +82,20 @@ class player(object):
                     win.blit(attack2[self.attackCount // 3], (self.x - 80, self.y - 35))
                     self.attackCount += 1
                     self.hitbox = (self.x - 10, self.y + 24, 32, 60)
+            if self.jumpCount1 + 1 >= 15:
+                self.visible = True
+                self.jumpCount1 = 0
+            if self.isJump:
+                if self.left:
+                    self.visible = False
+                    win.blit(jump2[self.jumpCount1 // 3], (self.x, self.y))
+                    self.jumpCount1 += 1
+                    self.hitbox = (self.x + 38, self.y + 24, 32, 60)
+                else:
+                    self.visible = False
+                    win.blit(jump1[self.jumpCount1 // 3], (self.x, self.y))
+                    self.jumpCount1 += 1
+                    self.hitbox = (self.x + 38, self.y + 24, 32, 60)
             if self.visible:
                 if self.walkCount + 1 >= 21:
                     self.walkCount = 0
@@ -97,8 +113,9 @@ class player(object):
                         win.blit(walkLeft[0], (self.x, self.y))
                 if not self.attacking:
                     self.hitbox = (self.x + 38, self.y + 24, 32, 60)
-            pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1] - 20, 50, 10))
-            pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0], self.hitbox[1] - 20, 50 - ((50 / 10) * (10 - self.health)), 10))
+
+            pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0] - 10, self.hitbox[1] - 20, 50, 10))
+            pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0] - 10, self.hitbox[1] - 20, 50 - ((50 / 10) * (10 - self.health)), 10))
 
 
 class enemy(object):
@@ -171,14 +188,14 @@ def redrawGameWindow():
     win.blit(bg, (bgx2, 0))
     text = font.render('Score: ' + str(score), 1, (255, 255, 255))
     win.blit(text, (10, 5))
-    man.draw(win)
     goblin.draw(win)
+    man.draw(win)
     pygame.display.update()
 
 # mainloop
 font = pygame.font.SysFont('arialblack', 15, True)
 man = player(250, 215, 64, 64)
-goblin = enemy(100, 235, 64, 64, 450)
+goblin = enemy(0, 235, 64, 64, 450)
 shootLoop = 0
 bullets = []
 currentnbgxpos = 0 - bg.get_width()
@@ -186,21 +203,28 @@ currentbgxpos = 0
 currentbgx2pos = bg.get_width()
 run = True
 while run:
-    clock.tick(27)
+    clock.tick(30)
+    if man.y == 215:
+        man.visible = True
     if goblin.health > 0:
         if not man.attacking:
             if man.hitbox[1] < goblin.hitbox[1] + goblin.hitbox[3] and man.hitbox[1] > goblin.hitbox[1]:
                 if man.hitbox[0] + man.hitbox[2] > goblin.hitbox[0] and man.hitbox[0] < goblin.hitbox[0] + goblin.hitbox[2]:
-                    man.hit()
-                    score -= 5
+                    if man.health > 0:
+                        man.hit()
+                        score -= 5
                 if man.health == 0:
+                    score += 0
                     goblin.visible = False
                     bg = pygame.image.load('gameover.jpg')
     if man.attacking:
         if man.hitbox[1] < goblin.hitbox[1] + goblin.hitbox[3] and man.hitbox[1] > goblin.hitbox[1]:
             if man.hitbox[0] + man.hitbox[2] > goblin.hitbox[0] and man.hitbox[0] < goblin.hitbox[0] + goblin.hitbox[2]:
-                goblin.hit()
-                score += 1
+                if goblin.health > 0:
+                    goblin.hit()
+                    score += 1
+                else:
+                    goblin.visible = False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
