@@ -56,22 +56,24 @@ class player(object):
             self.health -= 1
         else:
             self.visible = False
-        pass
 
     def draw(self, win):
+        if self.attackCount + 1 >= 18:
+            self.visible = True
+            self.attackCount = 0
+            self.attacking = False
+        if self.attacking:
+            if self.right:
+                self.visible = False
+                win.blit(attack1[self.attackCount // 3], (self.x - 30, self.y - 30))
+                self.attackCount += 1
+            else:
+                self.visible = False
+                win.blit(attack2[self.attackCount // 3], (self.x - 70, self.y - 35))
+                self.attackCount += 1
         if self.visible:
-            if self.attackCount + 1 >= 18:
-                self.attackCount = 0
-                self.attacking = False
             if self.walkCount + 1 >= 21:
                 self.walkCount = 0
-            if self.attacking:
-                if self.right:
-                    win.blit(attack1[self.attackCount // 3], (self.x - 30, self.y - 30))
-                    self.attackCount += 1
-                else:
-                    win.blit(attack2[self.attackCount // 3], (self.x - 70, self.y - 35))
-                    self.attackCount += 1
             if not (self.standing):
                 if self.left:
                     win.blit(walkLeft[self.walkCount // 3], (self.x, self.y))
@@ -192,6 +194,9 @@ while run:
         if man.hitbox[0] + man.hitbox[2] > goblin.hitbox[0] and man.hitbox[0] < goblin.hitbox[0] + goblin.hitbox[2]:
             man.hit()
             score -= 5
+        if man.health == 0:
+            goblin.visible = False
+            bg = pygame.image.load('gameover.jpg')
     if shootLoop > 0:
         shootLoop += 1
     if shootLoop > 3:
